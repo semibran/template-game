@@ -27,7 +27,7 @@ js:
 sprites:
 	node bin/sprites.js $(shell find src/sprites -type f -name '*.png')
 
-dev:
+dev: clean sprites js css html
 	chokidar "src/**/*.js" "lib/*.js" -c "make js" \
 	& chokidar "src/**/*.scss" -c "make css" \
 	& chokidar "src/**/*.html" -c "make html" \
