@@ -25,7 +25,7 @@ js:
 	rollup src/index.js -o dist/index.js -f iife -c -m
 
 sprites:
-	bin/sprites.js $(shell find src/sprites -type f -name '*.png')
+	node bin/sprites.js $(shell find src/sprites -type f -name '*.png')
 
 dev:
 	chokidar "src/**/*.js" "lib/*.js" -c "make js" \
