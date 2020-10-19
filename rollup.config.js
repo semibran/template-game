@@ -3,6 +3,6 @@ import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
 
 export default {
-	output: { name: "{{name}}" },
+	output: { name: "{{project.name}}" },
 	plugins: [ resolve(), commonjs(), json() ]
 }

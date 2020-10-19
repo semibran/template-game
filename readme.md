@@ -1,7 +1,7 @@
-# {{name}}
-> {{description}}
+# {{project.name}}
+> {{project.description}}
 
-A small but opinionated web game template.
+A small but opinionated web game template designed for personal projects.
 
 ## usage
 To get started, fork this repository and enter the following commands.
