@@ -7,9 +7,8 @@ A small but opinionated web game template designed for personal projects.
 To get started, fork this repository and enter the following commands.
 ```sh
 > scaffy   # replace template tags
-> pkg-bump # update package.json
+> pkg-bump # update package.json dep versions
 > npm i    # install deps
-> git init # init repository
 > make dev # watch files
 ```
 

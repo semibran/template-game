@@ -30,7 +30,6 @@ async function main() {
 	}
 
 	let names = paths.map(path => path.slice(common.length, -extname(path).length))
-
 	let images = await Promise.all(paths.map(path => Jimp.read(path)))
 	let sizes = images.map(image => [ image.bitmap.width, image.bitmap.height ])
 	let layout = pack(sizes)
