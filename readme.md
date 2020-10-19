@@ -6,10 +6,10 @@ A small but opinionated web game template designed for personal projects.
 ## usage
 To get started, fork this repository and enter the following commands.
 ```sh
-> scaffy
-> pkg-bump
-> npm i
-> git init
+> scaffy   # replace template tags
+> pkg-bump # update package.json
+> npm i    # install deps
+> git init # init repository
 > make dev # watch files
 ```
 
