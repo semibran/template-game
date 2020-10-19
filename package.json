@@ -1,0 +1,36 @@
+{
+  "name": "{{name}}",
+  "version": "0.0.0",
+  "description": "{{description}}",
+  "author": "semibran (Brandon Semilla)",
+  "repository": "semibran/{{name}}",
+  "license": "MIT",
+  "main": "src/index.html",
+  "keywords": [],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "*",
+    "@rollup/plugin-json": "*",
+    "@rollup/plugin-node-resolve": "*",
+    "autoprefixer": "*",
+    "babel-cli": "*",
+    "babel-preset-env": "*",
+    "chokidar-cli": "*",
+    "clean-css-cli": "*",
+    "gh-pages": "^*",
+    "html-minifier": "*",
+    "jimp": "*",
+    "key-state": "*",
+    "node-sass": "*",
+    "pack": "*",
+    "postcss": "*",
+    "postcss-cli": "*",
+    "rollup": "*",
+    "serve": "*",
+    "uglify-js": "*"
+  },
+  "dependencies": {
+    "img-load": "*",
+    "img-extract": "*",
+    "lerp": "*"
+  }
+}
