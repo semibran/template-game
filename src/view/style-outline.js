@@ -1,5 +1,5 @@
-import * as Canvas from "../../lib/canvas"
-import recolor from "../../lib/canvas-recolor"
+import * as Canvas from "../lib/canvas"
+import recolor from "../lib/canvas-recolor"
 
 export default function drawOutline(image, color) {
 	let result = Canvas.create(image.width + 2, image.height + 2)

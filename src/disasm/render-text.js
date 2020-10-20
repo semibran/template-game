@@ -1,7 +1,7 @@
-import * as Canvas from "../../lib/canvas"
-import findTextWidth from "./find-textwidth"
-import makeCharmap from "./charmap"
-import drawShadow from "./style-shadow"
+import { create as Canvas } from "../lib/canvas"
+import makeCharmap from "./make-charmap"
+import findTextWidth from "../view/find-textwidth"
+import drawShadow from "../view/style-shadow"
 
 export default function renderText(content, style, width) {
 	let id = style.color
@@ -25,7 +25,7 @@ export default function renderText(content, style, width) {
 	if (style.stroke) {
 		height += 2
 	}
-	let text = Canvas.create(width, height)
+	let text = Canvas(width, height)
 	let x = 0
 	let kerning = font.data.charspace
 	if (style.stroke) {

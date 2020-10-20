@@ -1,4 +1,4 @@
-import makeCharmap from "./charmap"
+import makeCharmap from "./make-charmap"
 
 export default function Font(image, data) {
 	let charmap = makeCharmap(image, data)

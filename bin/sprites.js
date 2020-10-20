@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { join, basename, extname, sep } = require("path")
+const { join, extname, sep } = require("path")
 const fs = require("fs")
 const pack = require("pack")
 const Jimp = require("jimp")

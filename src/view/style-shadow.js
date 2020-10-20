@@ -1,5 +1,5 @@
-import * as Canvas from "../../lib/canvas"
-import recolor from "../../lib/canvas-recolor"
+import * as Canvas from "../lib/canvas"
+import recolor from "../lib/canvas-recolor"
 
 export default function drawShadow(image, color) {
 	let result = Canvas.create(image.width + 1, image.height + 1)

@@ -1,5 +1,5 @@
-import recolor from "../../lib/canvas-recolor"
-import outline from "./style-outline"
+import recolor from "../lib/canvas-recolor"
+import outline from "../view/style-outline"
 import extract from "img-extract"
 
 export default function makeCharmap(image, font, color, stroke) {

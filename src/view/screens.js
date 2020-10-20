@@ -1,1 +1,1 @@
-exports.Game = require("../screen-game")
+exports.Game = require("../game/screen")

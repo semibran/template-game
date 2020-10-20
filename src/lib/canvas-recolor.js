@@ -9,7 +9,7 @@ export default function recolor(canvas, color) {
 	for (var i = 0; i < image.data.length; i += 4) {
 		if (image.data[i + 3] === 0) continue
 		for (var c = 0; c < 4; c++) {
-			image.data[i + c] = newColor[c]
+			image.data[i + c] = color[c]
 		}
 	}
 	context.putImageData(image, 0, 0)
