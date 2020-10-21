@@ -2,10 +2,13 @@ import { create as createGame } from "./game"
 import loadImage from "img-load"
 import disasm from "./disasm"
 
+import * as Comps from "./comps"
 import * as Screens from "./view/screens"
 import drawNodes from "./view/node-draw"
+import bounds from "./view/node-bbox"
 import findPos from "./view/find-eventpos"
 import quadrance from "./lib/quadrance"
+import contains from "./lib/box-contains"
 
 loadImage("sprites.png").then(main)
 
@@ -27,6 +30,7 @@ function main(sprites) {
 		},
 		screen: null,
 		nextscr: null,
+		comps: [],
 		anims: [],
 		cmds: [],
 		nodes: [],
@@ -47,7 +51,7 @@ function transition(view, scrtype, ...scrdata) {
 	let onenter = Screens[scrtype].onenter
 	if (onenter) {
 		let cmds = onenter(screen, view)
-		view.cmds.push(cmds)
+		if (cmds) view.cmds.push(...cmds)
 	}
 }
 
@@ -129,14 +133,14 @@ function mount(view, element) {
 	function onmove(event) {
 		pointer.pos = findPos(event)
 		if (!pointer.pos || !pointer.presspos) return false
-		if (pointer.mode === "click") {
+		if (pointer.click) {
 			let cursor = pointer.pos
 			let origin = pointer.presspos
 			// check if distance from pressed pos is greater than threshold `maxdist`
 			// uses quadrance instead of distance here for minor perf gains
 			const maxdist = 3
 			if (quadrance(origin, cursor) > Math.pow(maxdist, 2)) {
-				pointer.mode = "drag"
+				pointer.click = false
 			}
 		}
 		// call move hook
@@ -147,29 +151,63 @@ function mount(view, element) {
 		}
 	}
 
-	function onrelease(event) {
+	function onrelease() {
 		if (!pointer.presspos) return false
-		// call screen onrelease hook
-		let screen = view.screen
-		if (Screens[screen.type].onrelease) {
-			let cmds = Screens[screen.type].onrelease(screen, pointer)
-			if (cmds) view.cmds.push(...cmds)
+
+		// call component onclick (if applicable)
+		let clicked = false
+		if (pointer.click) {
+			let viewport = view.viewport
+			let scaledpos = {
+				x: pointer.pos.x / viewport.scale,
+				y: pointer.pos.y / viewport.scale
+			}
+			let comp = view.comps.find(comp => comp.node && contains(scaledpos, bounds(comp.node)))
+			if (comp) {
+				let cmds = Comps[comp.type].onclick(comp, pointer, view)
+				if (cmds) view.cmds.push(...cmds)
+				clicked = true
+			}
 		}
-		// reset after hook in case the data is used
-		pointer.mode = null
+
+		// wrapped this to block after successful comp click.
+		// if we want to return early from comp click,
+		// reset must be duplicated inside the above(↑) section
+		if (!clicked) {
+			// call screen onrelease hook
+			let screen = view.screen
+			if (Screens[screen.type].onrelease) {
+				let cmds = Screens[screen.type].onrelease(screen, pointer)
+				if (cmds) view.cmds.push(...cmds)
+			}
+		}
+
+		// reset after hooks in case the data is used inside one of them
 		pointer.presspos = null
+		pointer.click = false
 	}
 
 	function onupdate() {
+		while (view.cmds.length && !view.anims.length) {
+			// resolve commands
+			let [ ctype, ...cdata ] = view.cmds.shift()
+			if (ctype === "addcomp") {
+				let [ comp ] = cdata
+				view.comps.push(comp)
+			} else {
+				console.warn("Warning: No command handler defined for command " + ctype + "."
+					+ " Command has been dropped.")
+			}
+			view.dirty = true
+		}
+
 		if (view.dirty) {
 			view.dirty = false
 			render(view)
 		}
 
-		if (view.cmds.length) {
-			// resolve commands
-		}
-
+		// queue next frame
+		// todo: can we limit raf usage
 		requestAnimationFrame(onupdate)
 
 		// onupdate hook
@@ -201,7 +239,8 @@ function render(view) {
 	// draw on canvas
 	let layerseq = Screens[screen.type].layerseq
 	if (!layerseq) {
-		console.warn(`Warning: No layer sequence defined for screen ${screen.type}. Layers will not be sorted.`)
+		console.warn("Warning: No layer sequence defined for screen " + screen.type + "."
+			+ " Layers will not be sorted.")
 	}
 	drawNodes(nodes, layerseq, context)
 }

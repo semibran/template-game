@@ -15,6 +15,7 @@ export default function bbox(node) {
 	if (width === 0 || height === 0) {
 		return null
 	}
+
 	let origin = node.origin || "topleft"
 	if (origin === "top") {
 		origin = "topcenter"
@@ -40,6 +41,7 @@ export default function bbox(node) {
 	} else if (origin.endsWith("right")) {
 		x -= width
 	}
+
 	return {
 		left: x,
 		top: y,

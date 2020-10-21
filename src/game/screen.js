@@ -7,21 +7,31 @@ export function create() {
 		exit: false,
 		subscr: null,
 		nextscr: null,
-		buttons: []
+		buttons: [] // private button refs for rendering
 	}
 }
 
 export function onenter(game, view) {
-	let select = Button.create("Map Select", 80)
-	let option = Button.create("Option", 80)
+	let select = Button.create("Map Select", { width: 80, onclick() {
+		return [[ "switch-subscr", "map" ]]
+	}})
+
+	let option = Button.create("Option", { width: 80, onclick() {
+		return [[ "switch-subscr", "options" ]]
+	}})
+
 	game.buttons.push(select, option)
+	return [
+		[ "addcomp", select ],
+		[ "addcomp", option ]
+	]
 }
 
 export function render(game, view) {
 	let nodes = []
 
 	let { sprites, viewport } = view
-	let text = sprites.Text("Title Screen", { font: "seven", color: [ 0, 0, 0 ] })
+	let text = sprites.Text("{{project.name}}", { font: "seven", color: [ 0, 0, 0 ] })
 	let bg = Canvas(viewport.width, viewport.height)
 	bg.fillStyle = "white"
 	bg.fillRect(0, 0, viewport.width, viewport.height)

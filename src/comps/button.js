@@ -1,16 +1,23 @@
-export function create(text, width) {
+export function create(text, opts) {
+	Object.assign({ width: 0, onclick: null }, opts)
 	return {
+		type: "Button",
 		text: text,
-		width: width,
-		sprite: null
+		width: opts.width,
+		onclick: opts.onclick,
+		node: null
 	}
 }
 
 export function onclick(button, pointer, view) {
-	return [ "click" ]
+	if (button.onclick) return button.onclick()
 }
 
 export function render(button, view) {
 	let { sprites } = view
-	return { image: sprites.Button(button.text, button.width) }
+	if (!button.node) {
+		let sprite = sprites.Button(button.text, button.width)
+		button.node = { image: sprite }
+	}
+	return button.node
 }
