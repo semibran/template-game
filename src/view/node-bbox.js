@@ -1,9 +1,3 @@
-const origins = [
-	"topleft", "top", "topright",
-	"left", "center", "right",
-	"bottomleft", "bottom", "bottomright"
-]
-
 export default function bbox(node) {
 	let width = node.width
 	let height = node.height

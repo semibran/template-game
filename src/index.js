@@ -1,8 +1,8 @@
-import { create as createGame } from "./game"
+import { create as createGame } from "./game/game"
 import loadImage from "img-load"
 import disasm from "./disasm"
 
-import * as Comps from "./comps"
+import * as Comps from "./view/comps"
 import * as Screens from "./view/screens"
 import drawNodes from "./view/node-draw"
 import bounds from "./view/node-bbox"
@@ -154,60 +154,46 @@ function mount(view, element) {
 	function onrelease() {
 		if (!pointer.presspos) return false
 
-		// call component onclick (if applicable)
-		let clicked = false
+		// find component at pointer and call onclick if existent
 		if (pointer.click) {
 			let viewport = view.viewport
 			let scaledpos = {
 				x: pointer.pos.x / viewport.scale,
 				y: pointer.pos.y / viewport.scale
 			}
-			let comp = view.comps.find(comp => comp.node && contains(scaledpos, bounds(comp.node)))
+			let comp = view.comps.find(comp => comp.mode === view.screen.mode
+				&& comp.node && contains(scaledpos, bounds(comp.node)))
 			if (comp) {
 				let cmds = Comps[comp.type].onclick(comp, pointer, view)
 				if (cmds) view.cmds.push(...cmds)
-				clicked = true
+				pointer.presspos = null
+				pointer.click = false
+				return
 			}
 		}
 
-		// wrapped this to block after successful comp click.
-		// if we want to return early from comp click,
-		// reset must be duplicated inside the above(↑) section
-		if (!clicked) {
-			// call screen onrelease hook
-			let screen = view.screen
-			if (Screens[screen.type].onrelease) {
-				let cmds = Screens[screen.type].onrelease(screen, pointer)
-				if (cmds) view.cmds.push(...cmds)
-			}
+		// call screen onrelease hook (blocked if onclick succeeds)
+		let screen = view.screen
+		if (Screens[screen.type].onrelease) {
+			let cmds = Screens[screen.type].onrelease(screen, pointer)
+			if (cmds) view.cmds.push(...cmds)
 		}
 
-		// reset after hooks in case the data is used inside one of them
+		// reset after hooks in case the data is used
 		pointer.presspos = null
 		pointer.click = false
 	}
 
 	function onupdate() {
-		while (view.cmds.length && !view.anims.length) {
-			// resolve commands
-			let [ ctype, ...cdata ] = view.cmds.shift()
-			if (ctype === "addcomp") {
-				let [ comp ] = cdata
-				view.comps.push(comp)
-			} else {
-				console.warn("Warning: No command handler defined for command " + ctype + "."
-					+ " Command has been dropped.")
-			}
-			view.dirty = true
-		}
-
+		view.dirty |= updateanims(view)
+		view.dirty |= resolvecmds(view)
 		if (view.dirty) {
 			view.dirty = false
 			render(view)
 		}
 
 		// queue next frame
-		// todo: can we limit raf usage
+		// todo: limit raf usage?
 		requestAnimationFrame(onupdate)
 
 		// onupdate hook
@@ -217,6 +203,63 @@ function mount(view, element) {
 			if (cmds) view.cmds.push(...cmds)
 		}
 	}
+}
+
+function updateanims(view) {
+	let dirty = false
+	for (let anim of view.anims) {
+		dirty = true
+	}
+	return dirty
+}
+
+function resolvecmds(view) {
+	let dirty = false
+	while (view.cmds.length && !view.anims.length) {
+		dirty = true
+		let [ ctype, ...cdata ] = view.cmds.shift()
+		if (ctype === "addcomp") {
+			addcomp(view, ...cdata)
+		} else if (ctype === "removecomp") {
+			removecomp(view, ...cdata)
+		} else if (ctype === "switchmode") {
+			switchmode(view, ...cdata)
+		} else {
+			dirty = false
+			console.warn("Warning: No command handler defined for command " + ctype + "."
+				+ " Command has been dropped.")
+		}
+	}
+	return dirty
+}
+
+function addcomp(view, comp) {
+	comp.mode = view.screen.mode
+	view.comps.push(comp)
+}
+
+function removecomp(view, comp) {
+	let idx = view.comps.indexOf(comp)
+	if (idx >= 0) {
+		view.comps.splice(idx, 1)
+	}
+}
+
+function switchmode(view, next) {
+	let screen = view.screen
+	let mode = screen.mode
+	let onexit = Screens[screen.type].Modes[mode.type].onexit
+	if (onexit) {
+		view.cmds.push(...onexit(mode))
+	}
+
+	let nextmode = Screens[screen.type].Modes[next].create()
+	let onenter = Screens[screen.type].Modes[next].onenter
+	if (onenter) {
+		view.cmds.push(...onenter(nextmode))
+	}
+
+	screen.mode = nextmode
 }
 
 function render(view) {

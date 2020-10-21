@@ -7,10 +7,14 @@ export default function renderButton(content, width, sprites) {
 	let text = sprites.Text(content)
 	let w = width || text.width + padx * 2
 	let h = text.height + pady * 2 - 2
+	let y = pady
+	let x = width
+		? Math.round(width / 2 - text.width / 2)
+		: padx
 	let button = Canvas(w, h)
 	button.fillRect(1, 0, w - 2, h)
 	button.fillRect(0, 1, w, h - 2)
-	button.drawImage(text, width ? width / 2 - text.width / 2 : padx, pady)
+	button.drawImage(text, x, y)
 
 	return button.canvas
 }

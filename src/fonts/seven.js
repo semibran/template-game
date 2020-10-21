@@ -5,7 +5,7 @@ module.exports = {
 	charwidth: 5,
 	charheight: 7,
 	charspace: 1,
-	wordspace: 4,
+	wordspace: 3,
 	linespace: 5,
 	exceptions: {
 		1: { width: 3 },
