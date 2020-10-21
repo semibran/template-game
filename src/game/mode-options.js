@@ -7,7 +7,7 @@ const create = _ => ({
 	exit: false,
 	// private refs for rendering
 	buttons: [],
-
+	anims: []
 })
 
 const onenter = mode => {

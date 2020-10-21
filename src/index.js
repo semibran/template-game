@@ -4,6 +4,7 @@ import disasm from "./disasm"
 
 import * as Comps from "./view/comps"
 import * as Screens from "./view/screens"
+import * as Anims from "./view/anims"
 import drawNodes from "./view/node-draw"
 import bounds from "./view/node-bbox"
 import findPos from "./view/find-eventpos"
@@ -209,21 +210,33 @@ function updateanims(view) {
 	let dirty = false
 	for (let anim of view.anims) {
 		dirty = true
+		if (anim.done) {
+			stopanim(view, anim)
+		} else {
+			Anims[anim.type].update(anim)
+		}
+	}
+	if (!dirty && view.screen.nextmode) {
+		switchmode(view)
 	}
 	return dirty
 }
 
 function resolvecmds(view) {
 	let dirty = false
-	while (view.cmds.length && !view.anims.length) {
+	while (view.cmds.length && !view.anims.find(anim => anim.blocking)) {
 		dirty = true
 		let [ ctype, ...cdata ] = view.cmds.shift()
 		if (ctype === "addcomp") {
 			addcomp(view, ...cdata)
 		} else if (ctype === "removecomp") {
 			removecomp(view, ...cdata)
-		} else if (ctype === "switchmode") {
-			switchmode(view, ...cdata)
+		} else if (ctype === "startanim") {
+			startanim(view, ...cdata)
+		} else if (ctype === "stopanim") {
+			stopanim(view, ...cdata)
+		} else if (ctype === "nextmode") {
+			nextmode(view, ...cdata)
 		} else {
 			dirty = false
 			console.warn("Warning: No command handler defined for command " + ctype + "."
@@ -245,21 +258,48 @@ function removecomp(view, comp) {
 	}
 }
 
-function switchmode(view, next) {
+function startanim(view, anim) {
+	view.anims.push(anim)
+}
+
+function stopanim(view, anim) {
+	anim.done = true
+	let idx = view.anims.indexOf(anim)
+	if (idx >= 0) {
+		view.anims.splice(idx, 1)
+	}
+}
+
+function nextmode(view, next) {
 	let screen = view.screen
 	let mode = screen.mode
 	let onexit = Screens[screen.type].Modes[mode.type].onexit
 	if (onexit) {
 		view.cmds.push(...onexit(mode))
 	}
+	screen.nextmode = next
+}
 
-	let nextmode = Screens[screen.type].Modes[next].create()
-	let onenter = Screens[screen.type].Modes[next].onenter
+function switchmode(view) {
+	let screen = view.screen
+
+	// remove old mode
+	let mode = screen.mode
+	let onremove = Screens[screen.type].Modes[mode.type].onremove
+	if (onremove) {
+		view.cmds.push(...onremove(mode))
+	}
+
+	// create new modedata, components, enter animations
+	let nextmode = Screens[screen.type].Modes[screen.nextmode].create()
+	let onenter = Screens[screen.type].Modes[screen.nextmode].onenter
 	if (onenter) {
 		view.cmds.push(...onenter(nextmode))
 	}
 
+	// switch to new mode
 	screen.mode = nextmode
+	screen.nextmode = null
 }
 
 function render(view) {
