@@ -288,6 +288,9 @@ function switchmode(view) {
 	let onremove = Screens[screen.type].Modes[mode.type].onremove
 	if (onremove) {
 		view.cmds.push(...onremove(mode))
+	} else {
+		console.warn("Warning: No onremove hook defined for mode " + mode.type + "."
+			+ " View may be caching extraneous components.")
 	}
 
 	// create new modedata, components, enter animations

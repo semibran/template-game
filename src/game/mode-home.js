@@ -1,5 +1,7 @@
 import * as Button from "../comps/button"
-import * as EaseLinear from "../anims/ease-out"
+import * as EaseLinear from "../anims/ease-linear"
+import * as EaseOut from "../anims/ease-out"
+import * as EaseIn from "../anims/ease-in"
 import lerp from "lerp"
 
 export { create, onenter, onexit, onremove, render }
@@ -12,24 +14,37 @@ const create = _ => ({
 })
 
 const onenter = mode => {
-	let select = Button.create("Map Select", {
-		width: 80,
-		// onclick: _ => [[ "nextmode", "Map" ]]
-	})
+	let campaign = Button.create("Campaign", { width: 80 })
+	let vs = Button.create("VS. Mode", { width: 80 })
 	let option = Button.create("Option", {
 		width: 80,
 		onclick: _ => [[ "nextmode", "Options" ]]
 	})
-	mode.buttons.push(select, option)
-	return [[ "addcomp", select ], [ "addcomp", option ]]
+	mode.buttons.push(campaign, vs, option)
+
+	for (let i = 0; i < mode.buttons.length; i++) {
+		let anim = EaseOut.create(10, { delay: i * 6 })
+		mode.anims.push(anim)
+	}
+
+	let textanim = EaseLinear.create(10)
+	mode.anims.push(textanim)
+
+	return [
+		...mode.buttons.map(comp => [ "addcomp", comp ]),
+		...mode.anims.map(anim => [ "startanim", anim ])
+	]
 }
 
 const onexit = mode => {
 	mode.exit = true
+	mode.anims.length = 0
 	for (let i = 0; i < mode.buttons.length; i++) {
-		let anim = EaseLinear.create(15, { delay: i * 3 })
+		let anim = EaseIn.create(8, { delay: i * 4 })
 		mode.anims.push(anim)
 	}
+	let textanim = EaseLinear.create(10)
+	mode.anims.push(textanim)
 	return mode.anims.map(anim => [ "startanim", anim ])
 }
 
@@ -47,21 +62,27 @@ const render = (mode, view) => {
 		y: 32,
 		origin: "center"
 	}
+	let textanim = mode.anims[mode.anims.length - 1]
+	if (textanim) textnode.opacity = mode.exit ? (1 - textanim.x) : textanim.x
 	nodes.push(textnode)
 
 	for (let i = 0; i < mode.buttons.length; i++) {
 		let button = mode.buttons[i]
 		let node = Button.render(button, view)
 		node.x = viewport.width / 2
-		node.y = textnode.y + text.height + 15 * i
-		node.origin = "topcenter"
+		node.y = textnode.y + text.height + 4 + i * 15
+		node.origin = "center"
 		nodes.push(node)
 
 		let anim = mode.anims[i]
 		if (anim) {
-			let start = viewport.width / 2
-			let goal = -node.image.width / 2
-			node.x = lerp(start, goal, anim.x)
+			if (mode.exit) {
+				const start = viewport.width / 2
+				const goal = -node.image.width / 2
+				node.x = lerp(start, goal, anim.x)
+			} else {
+				node.height = node.image.height * anim.x
+			}
 		}
 	}
 
