@@ -1,38 +1,37 @@
 # GNU Make 3.8.2 and above
 
+MAKEFLAGS += --no-print-directory
+
+.EXPORT_ALL_VARIABLES:
+.SILENT:
+
 PATH := $(PWD)/node_modules/.bin:$(PATH)
 SHELL := /bin/bash
 
-all: clean
-	make sprites js
-	babel dist/index.js --presets=env | uglifyjs -o dist/index.js -c
-	postcss src/style.scss -u autoprefixer -o dist/style.css -m
-	cleancss dist/style.css -o dist/style.css --source-map --source-map-inline-sources
-	html-minifier --collapse-whitespace src/index.html -o dist/index.html
-	rm dist/*.map
+dev: NODE_ENV=true
 
-clean:
-	rm -rf dist
-	mkdir -p dist/tmp
+all: clean sprites css
+	esbuild src/index.js --bundle --minify --outfile=dist/index.js
+	html-minifier --collapse-whitespace src/index.html -o dist/index.html
+
+watch: clean sprites js css html
+	chokidar "src/**/*.js" "src/**/*.json" -c "make js" \
+	& chokidar "src/**/*.css" -c "make css" \
+	& chokidar "src/**/*.html" -c "make html" \
+	& chokidar "src/**/*.png" -c "make sprites js"
 
 html:
-	cp src/index.html dist/index.html
+	cp src/index.html dist
 
 css:
-	node-sass src/style.scss -o dist --source-map true --source-map-contents
+	cp src/style.css dist
 
 js:
-	rollup src/index.js -o dist/index.js -f iife -c -m
+	esbuild src/index.js --bundle --sourcemap --outfile=dist/index.js
 
 sprites:
 	node bin/sprites.js $(shell find src/sprites -type f -name '*.png')
 
-dev: clean sprites js css html
-	chokidar "src/**/*.js" -c "make js" \
-	& chokidar "src/**/*.scss" -c "make css" \
-	& chokidar "src/**/*.html" -c "make html" \
-	& chokidar "src/**/*.png" -c "make sprites js" \
-	& serve dist
-
-deploy: all
-	gh-pages -d dist -m "updates"
+clean:
+	rm -rf dist
+	mkdir -p dist/tmp
