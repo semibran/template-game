@@ -1,1 +1,1 @@
-exports.seven = require("./seven")
+exports.seven = require('./seven')

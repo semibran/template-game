@@ -1,20 +1,13 @@
-import srcmap from "../../dist/tmp/sprites.json"
-import fontdata from "../fonts"
-import disasm from "./disasm"
-import disasmFonts from "./disasm-fonts"
-import renderText from "./render-text"
-import renderButton from "./render-button"
+import srcmap from '../dist/tmp/sprites.json'
+import loadImage from 'img-load'
+import disasm from '../lib/disasm'
+import disasmFonts from './fonts'
+import * as fontdata from '../fonts'
 
-export default function normalize(spritesheet) {
-	let images = disasm(spritesheet, srcmap)
-	let fonts = disasmFonts(images, fontdata)
-	let sprites = {}
+export let fonts = null
 
-	const Text = (content, style) =>
-		renderText(content, { ...style, font: fonts[style && style.font || "seven"] })
-
-	const Button = (content, width) => renderButton(content, width, sprites)
-
-	sprites = { Text, Button }
-	return sprites
+export async function load (path) {
+  const sheet = await loadImage(path)
+  const images = disasm(sheet, srcmap)
+  fonts = disasmFonts(images, fontdata)
 }
