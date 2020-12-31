@@ -4,10 +4,10 @@
 ## usage
 To get started, fork this repository and enter the following commands.
 ```sh
-> scaffy   # replace template tags
-> pkg-bump # update package.json dep versions
-> npm i    # install deps
-> make dev # watch files and start web server
+> scaffy     # replace template tags
+> pkg-bump   # update package.json dep versions
+> npm i      # install deps
+> make watch # watch files
 ```
 
 ## deps
