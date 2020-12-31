@@ -13,7 +13,6 @@ To get started, fork this repository and enter the following commands.
 ## deps
 - task runner: `make`
 - JS: `esbuild`
-- CSS: `sass`, `postcss`, `autoprefixer`, `cleancss`
 - HTML: `html-minifier`
 - file watcher: `chokidar`
 - spritesheet creation/extraction: `jimp`, `pack`, `img-load`, `img-extract`
